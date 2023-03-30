@@ -8,7 +8,7 @@ const faunadb = require('faunadb')
 const client = new faunadb.Client({ secret: process.env.FAUNADB_SECRET })
 
 
-const { getWeather } = require('./functions/weather/getplanet')
+const { getWeather, getForecastResponse } = require('./functions/weather/getplanet')
 
 const {
     Ref,
@@ -52,42 +52,6 @@ app.get('/planet/name/:name', async (req, res) => {
     res.send(doc)
 });
 
-//Get Planet Image
-app.get('/planet/:name/img', async (req, res) => {
-    try {
-        const doc = await client.query(
-        Get(
-            Match(
-            Index("planets_by_name"), req.params.name
-            )
-        )
-        );
-        const planet = doc.data;
-        res.redirect(planet.imageURL);
-    } catch (err) {
-        console.error("Error:", err);
-        res.status(500).send("Error fetching planet");
-    }
-    });
-
-//Get Planet Description
-app.get('/planet/:name/desc', async (req, res) => {
-    try {
-        const doc = await client.query(
-        Get(
-            Match(
-            Index("planets_by_name"), req.params.name
-            )
-        )
-        );
-        const planet = doc.data;
-        res.send(planet.description);
-    } catch (err) {
-        console.error("Error:", err);
-        res.status(500).send("Error fetching planet");
-    }
-    });
-
 //Get Planet By Current Location
 app.get('/planet/location/:location', async (req, res) => {
     try {
@@ -110,28 +74,19 @@ app.get('/planet/location/:location', async (req, res) => {
     }
   });
 
-//Get Planet Name By Current Location
-app.get('/planet/location/:location/name', async (req, res) => {
+//Get Forecast By Current Location
+app.get('/planet/location/:location/forecast', async (req, res) => {
     try {
         const location = req.params.location.toString();
-        const planet = await getWeather(location);
-        console.log("PLANET:", planet);
-
-        const doc = await client.query(
-            Get(
-                Match(
-                    Index("planets_by_name"), planet
-                )
-            )
-        );
-        res.send(doc.data.name);
+        const response = await getForecastResponse(location)
+        res.send(response)
     } catch (err) {
-        console.error("Error:", err);
-        res.status(500).send("Error fetching planet");
+      console.error("Error:", err);
+      res.status(500).send("Error fetching forecast");
     }
-});
+  });
 
-//Get Planet Image By Current Location
+//Get Planet Image By Current Location (TESTING ONLY)
 app.get('/planet/location/:location/img', async (req, res) => {
     try {
         const location = req.params.location.toString();
@@ -146,27 +101,6 @@ app.get('/planet/location/:location/img', async (req, res) => {
             )
         );
         res.redirect(doc.data.imageURL);
-    } catch (err) {
-        console.error("Error:", err);
-        res.status(500).send("Error fetching planet");
-    }
-});
-
-//Get Planet Description By Current Location
-app.get('/planet/location/:location/desc', async (req, res) => {
-    try {
-        const location = req.params.location.toString();
-        const planet = await getWeather(location);
-        console.log("PLANET:", planet);
-
-        const doc = await client.query(
-            Get(
-                Match(
-                    Index("planets_by_name"), planet
-                )
-            )
-        );
-        res.send(doc.data.description);
     } catch (err) {
         console.error("Error:", err);
         res.status(500).send("Error fetching planet");

@@ -112,14 +112,37 @@ function getWeather(location) {
         .then(data => {
             const temperature = data.main.temp;
             const weather = data.weather[0].description;
-            const feelslike = getPlanet(weather, temperature)
-            console.log(`The temperature in ${location} feels like ${feelslike}, at ${temperature}°F with ${weather}.`);
-            return feelslike
+            const planet = getPlanet(weather, temperature)
+            console.log(`The temperature in ${location} feels like ${planet}, at ${temperature}°F with ${weather}.`);
+            return planet
         })
         .catch(error => {
             console.error("There was a problem fetching the weather data:", error);
         });
 }
 
-module.exports = { getPlanet, getWeather };
+function getForecastResponse(location) {
+    const apiKey = process.env.OPEN_WEATHER_API_KEY;
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}&units=imperial`;
+
+    return fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            console.log("RESPONSE OK")
+            return response.json();
+        })
+        .then(data => {
+            const temperature = data.main.temp;
+            const weather = data.weather[0].description;
+            let response = [{"temperature": temperature, "description": weather}]
+            return JSON.stringify(response)
+        })
+        .catch(error => {
+            console.error("There was a problem fetching the weather data:", error);
+        });
+}
+
+module.exports = { getPlanet, getWeather, getForecastResponse };
   
