@@ -136,8 +136,8 @@ function getForecastResponse(location) {
         .then(data => {
             const temperature = data.main.temp;
             const weather = data.weather[0].description;
-            let response = [{"temperature": temperature, "description": weather}]
-            return JSON.stringify(response)
+            let response = {"temperature": temperature, "description": weather}
+            return response
         })
         .catch(error => {
             console.error("There was a problem fetching the weather data:", error);
